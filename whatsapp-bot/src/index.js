@@ -64,6 +64,11 @@ async function connectToWhatsApp() {
 
     if (connection === 'open') {
       console.log(`✅ ${config.BOT_NAME} connecté. Préfixe des commandes : "${config.PREFIX}"`);
+      // Permet aux autres composants (mono-service) de notifier via WhatsApp.
+      global.DBL_NOTIFY = global.DBL_NOTIFY || {};
+      global.DBL_NOTIFY.whatsapp = async (number, text) => {
+        await sock.sendMessage(`${number}@s.whatsapp.net`, { text });
+      };
     }
 
     if (connection === 'close') {

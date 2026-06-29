@@ -122,7 +122,25 @@ async function getMyMatchMessage(platform, externalId) {
     ? await Match.findById(current._id).populate('player1 player2')
     : null;
 
-  return { message: format.formatMyMatch(populated, player._id, tournament) };
+  // Adversaire (si connu) pour permettre au bot de le notifier.
+  let opponent = null;
+  if (populated && populated.player1 && populated.player2) {
+    const opp = String(populated.player1._id) === String(player._id) ? populated.player2 : populated.player1;
+    if (opp) {
+      opponent = {
+        pseudo: opp.pseudo,
+        discordId: opp.discordId || null,
+        whatsappNumber: opp.whatsappNumber || null,
+      };
+    }
+  }
+
+  return {
+    message: format.formatMyMatch(populated, player._id, tournament),
+    opponent,
+    me: player.pseudo,
+    tournament: tournament.name,
+  };
 }
 
 /**

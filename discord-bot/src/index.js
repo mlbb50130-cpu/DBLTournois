@@ -14,6 +14,12 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once(Events.ClientReady, (c) => {
   console.log(`✅ ${config.BOT_NAME} connecté en tant que ${c.user.tag}`);
+  // Permet aux autres composants (mono-service) de notifier via Discord (DM).
+  global.DBL_NOTIFY = global.DBL_NOTIFY || {};
+  global.DBL_NOTIFY.discord = async (userId, text) => {
+    const user = await c.users.fetch(userId);
+    await user.send(text);
+  };
 });
 
 // --- Boutons (S'inscrire / Se désister / Valider / Contester / Actualiser) ---

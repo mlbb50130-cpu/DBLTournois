@@ -8,6 +8,7 @@ const {
 } = require('discord.js');
 const { renderStandingsImages } = require('./utils/standingsImage');
 const { renderBracketImages } = require('./utils/bracketImage');
+const { notifyOpponent } = require('./utils/notify');
 
 // --- Helpers ---
 
@@ -143,10 +144,14 @@ const commands = [
     },
   },
   {
-    data: new SlashCommandBuilder().setName('monmatch').setDescription('Voir ton prochain match'),
+    data: new SlashCommandBuilder().setName('monmatch').setDescription('Voir ton prochain match (notifie ton adversaire)'),
     async execute(interaction, ctx) {
       const res = await ctx.api.getMyMatch(ctx.externalId);
       await interaction.editReply(res.message || "Tu n'as pas de match en attente.");
+      if (res.opponent) {
+        const text = `🔔 **${res.me || 'Un joueur'}** est prêt pour votre match dans **${res.tournament || 'le tournoi'}**. À vous de jouer !`;
+        await notifyOpponent(res.opponent, text);
+      }
     },
   },
   {
