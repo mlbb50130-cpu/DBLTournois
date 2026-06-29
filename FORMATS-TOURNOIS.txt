@@ -1,0 +1,141 @@
+=========================================================================
+ TOURNOIS DBL - LES 3 TYPES DE TOURNOI ET LEUR LOGIQUE
+=========================================================================
+
+Tous les formats partagent les memes regles de match :
+  - Match 1 contre 1, au meilleur des N manches (Best-Of : BO1 / BO3 / BO5).
+  - Le gagnant est le premier a atteindre (N/2 + 1) manches gagnees
+    (BO3 -> 2 manches, BO5 -> 3 manches).
+  - Un score se declare par un joueur, puis l'adversaire le VALIDE ou le
+    CONTESTE. En cas de contestation -> litige, tranche par un admin.
+  - Chaque match a un CODE court (pour le referencer en cas de litige) :
+        P2-1  = bracket principal, tour 2, match 1
+        L3-1  = losers bracket, tour 3, match 1
+        GF    = grande finale (double elimination)
+        G1-3  = poule 1, match 3
+
+
+-------------------------------------------------------------------------
+ 1) ELIMINATION SIMPLE
+-------------------------------------------------------------------------
+
+PRINCIPE
+  Une seule defaite elimine. Arbre classique : on monte de tour en tour
+  jusqu'a la finale.
+
+GENERATION DU BRACKET
+  - On calcule la taille du tableau = puissance de 2 immediatement >=
+    au nombre de joueurs (ex : 5 joueurs -> tableau de 8).
+  - Les places vides sont des BYES (qualification d'office) attribuees aux
+    tetes de serie selon un placement standard, pour eviter que deux byes
+    se rencontrent.
+  - Exemple 8 joueurs : Quarts (4 matchs) -> Demies (2) -> Finale (1).
+
+PROGRESSION
+  - Le gagnant d'un match avance au match suivant (tour superieur).
+  - Un joueur avec un bye est qualifie automatiquement au tour suivant.
+  - Le gagnant de la finale = CHAMPION.
+
+CLASSEMENT
+  - Calcule par TOUR D'ELIMINATION :
+        1er  = champion
+        2e   = finaliste battu
+        3e   = les 2 demi-finalistes (ex aequo)
+        5e   = les 4 quart-de-finalistes (ex aequo), etc.
+
+NOMBRE DE JOUEURS
+  - A partir de 2, n'importe quel nombre (les byes comblent le tableau).
+
+
+-------------------------------------------------------------------------
+ 2) ELIMINATION DOUBLE
+-------------------------------------------------------------------------
+
+PRINCIPE
+  Il faut DEUX defaites pour etre elimine. Deux tableaux :
+    - WINNERS BRACKET (principal) : les invaincus.
+    - LOSERS BRACKET (perdants)   : repechage de ceux qui ont perdu 1 fois.
+  Puis une GRANDE FINALE entre le vainqueur des winners et celui des losers.
+
+GENERATION DU BRACKET
+  - Winners bracket : comme une elimination simple.
+  - Losers bracket : alterne des tours "mineurs" (survivants des losers
+    entre eux) et "majeurs" (survivant des losers contre un joueur qui
+    vient de tomber des winners).
+  - Le perdant d'un match des winners "tombe" a une place precise du
+    losers bracket (routage du perdant).
+
+PROGRESSION
+  - Perdre dans les winners -> on bascule dans les losers (1re defaite).
+  - Perdre dans les losers   -> elimine (2e defaite).
+  - Vainqueur winners + vainqueur losers -> grande finale.
+  - Le gagnant de la grande finale = CHAMPION.
+    (Version actuelle : une seule grande finale, SANS "bracket reset".)
+
+CLASSEMENT
+  - Par stade d'elimination :
+        1er  = champion (gagnant grande finale)
+        2e   = finaliste (perdant grande finale)
+        puis selon le tour des losers ou le joueur a pris sa 2e defaite
+        (plus c'est tard, mieux c'est classe ; ex aequo possibles).
+
+NOMBRE DE JOUEURS
+  - DOIT etre une PUISSANCE DE 2 : 4, 8, 16, 32...
+    (sinon le tableau est refuse, message clair a la creation).
+
+STRUCTURE POUR 8 JOUEURS (reference)
+  - Winners : 7 matchs   |  Losers : 6 matchs   |  Grande finale : 1 match.
+
+
+-------------------------------------------------------------------------
+ 3) POULES + PHASE FINALE
+-------------------------------------------------------------------------
+
+PRINCIPE
+  Phase de groupes en championnat (round-robin) : dans chaque poule, chaque
+  joueur affronte tous les autres. Les meilleurs de chaque poule se
+  qualifient pour une phase finale a elimination simple.
+
+PARAMETRES
+  - poolSize          : taille cible d'une poule (defaut 4).
+  - qualifiersPerPool : nombre de qualifies par poule (defaut 2).
+
+GENERATION
+  - Repartition equilibree des joueurs en groupes (selon poolSize).
+  - Dans chaque poule : tous les matchs "chacun contre chacun"
+    (ex : poule de 4 -> 6 matchs).
+
+CLASSEMENT DE POULE
+  - Points : victoire = 3, defaite = 0 (pas de match nul).
+  - Departages, dans l'ordre :
+        1) Points
+        2) Difference de manches (manches gagnees - manches perdues)
+        3) Manches gagnees
+  - Colonnes affichees : Rang, Joueur, PTS, V-D, Manches (gagnees/perdues),
+    DIFF. Les qualifies sont mis en evidence.
+
+PHASE FINALE (automatique)
+  - Quand TOUS les matchs de poule sont termines, le bracket final est
+    genere automatiquement.
+  - Les qualifies sont entrelaces (1er de chaque poule, puis 2e de chaque
+    poule...) pour eviter que deux joueurs d'une meme poule se croisent
+    trop tot.
+  - La phase finale est une ELIMINATION SIMPLE -> son gagnant = CHAMPION.
+
+NOMBRE DE JOUEURS
+  - Flexible (groupes de tailles proches si le total n'est pas multiple
+    de poolSize).
+
+
+-------------------------------------------------------------------------
+ RESUME RAPIDE
+-------------------------------------------------------------------------
+
+  Format              Defaites pour sortir   Joueurs        Classement
+  ------------------  ---------------------  -------------  ----------------------
+  Elimination simple  1                      >= 2 (libre)   par tour d'elimination
+  Elimination double  2                      puissance de 2 par stade (W/L + GF)
+  Poules + finale     phase de groupes       libre          tables de poule + finale
+                      puis elim. simple
+
+=========================================================================

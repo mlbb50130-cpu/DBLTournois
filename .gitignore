@@ -1,0 +1,22 @@
+# Dependances
+**/node_modules/
+
+# Secrets / environnement
+**/.env
+
+# Sessions WhatsApp (Baileys)
+**/whatsapp_auth/
+**/sessions/
+
+# Logs et donnees locales
+*.log
+**/*.log
+.mongodata/
+
+# Aperçus d'images generes (les assets restent dans **/src/assets/)
+/whatsapp-bot/*.png
+/discord-bot/*.png
+
+# OS
+Thumbs.db
+.DS_Store
