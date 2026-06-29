@@ -1,5 +1,38 @@
 # Déploiement sur Railway
 
+## ⭐ Option simple : UN SEUL service (mono-service)
+
+Le projet a un point d'entrée racine **`index.js`** + un **`package.json`** racine
+qui lance l'**API + WhatsApp + Discord dans un seul processus**.
+
+Sur Railway :
+1. **New → Deploy from GitHub** → `mlbb50130-cpu/DBLTournois`
+2. **Root Directory** : laisse la **racine** (vide) — Railpack trouvera le
+   `package.json` racine.
+3. **Volume** : ajoute un volume monté sur `/data` (session WhatsApp).
+4. **Variables** (Raw Editor) — pas besoin de `API_BASE_URL` (auto en local) ni
+   de `PORT` (fourni par Railway) :
+   ```
+   MONGODB_URI=...
+   ADMIN_KEY=...
+   DISCORD_TOKEN=...
+   DISCORD_CLIENT_ID=...
+   DISCORD_GUILD_ID=...
+   WHATSAPP_NUMBER=2290154959093
+   USE_PAIRING_CODE=true
+   SESSION_PATH=/data/whatsapp_auth
+   ```
+5. Déploie. Le **code d'appairage WhatsApp** apparaît dans les **logs**.
+
+> Les 3 tournent dans le même conteneur ; les bots appellent l'API via
+> `127.0.0.1`. Un échec isolé d'un bot ne tue pas les autres.
+> Slash commands Discord : déjà enregistrées ; relance `npm run deploy` (en local)
+> seulement si tu changes des commandes.
+
+---
+
+## Option avancée : 3 services séparés
+
 Le projet = **3 services** indépendants + **MongoDB Atlas** :
 
 | Service        | Dossier         | Rôle                              |

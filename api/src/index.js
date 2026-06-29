@@ -38,5 +38,5 @@ async function start() {
 
 start().catch((error) => {
   console.error('Erreur fatale au démarrage de l’API :', error);
-  process.exit(1);
+  if (require.main === module) process.exit(1);
 });

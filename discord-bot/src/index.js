@@ -5,8 +5,8 @@ const { isAdmin } = require('./utils/admin');
 const { commands, standingsPayload, bracketPayload } = require('./commands');
 
 if (!config.TOKEN) {
-  console.error('❌ DISCORD_TOKEN manquant dans .env. Voir le README.');
-  process.exit(1);
+  console.error('❌ DISCORD_TOKEN manquant. Voir le README / les variables.');
+  if (require.main === module) process.exit(1);
 }
 
 const byName = new Map(commands.map((c) => [c.data.name, c]));
@@ -83,4 +83,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-client.login(config.TOKEN);
+if (config.TOKEN) {
+  client.login(config.TOKEN).catch((e) => {
+    console.error('Échec de connexion Discord :', e && e.message ? e.message : e);
+  });
+}

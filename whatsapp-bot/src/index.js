@@ -116,6 +116,6 @@ process.on('SIGINT', async () => {
 });
 
 main().catch((error) => {
-  console.error('Erreur fatale au démarrage :', error);
-  process.exit(1);
+  console.error('Erreur fatale au démarrage du bot WhatsApp :', error);
+  if (require.main === module) process.exit(1);
 });
