@@ -31,8 +31,11 @@ async function register(platform, externalId, pseudo) {
   );
   if (already) {
     const code = await Players.ensureLinkCode(player);
+    const otherPlatform = platform === 'discord' ? 'WhatsApp' : 'Discord';
     return {
-      message: `Tu es déjà inscrit au tournoi *${tournament.name}*.\n\n🔗 Code de liaison : *${code}*`,
+      message:
+        `Tu es déjà inscrit au tournoi *${tournament.name}*.\n\n` +
+        `🔗 Pour lier ton compte ${otherPlatform} : code *${code}* (commande de liaison sur ${otherPlatform}).`,
       tournament: tournament._id,
     };
   }
@@ -45,11 +48,12 @@ async function register(platform, externalId, pseudo) {
   await tournament.save();
 
   const code = await Players.ensureLinkCode(player);
+  const otherPlatform = platform === 'discord' ? 'WhatsApp' : 'Discord';
   return {
     message:
       `✅ Inscription confirmée au tournoi *${tournament.name}* ` +
       `(${tournament.registrations.length} joueur(s)).\n\n` +
-      `🔗 Pour lier ton compte sur l'autre plateforme, utilise le code *${code}* avec la commande de liaison.`,
+      `🔗 Pour lier ton compte ${otherPlatform}, utilise le code *${code}* avec la commande de liaison (sur ${otherPlatform}).`,
     tournament: tournament._id,
   };
 }

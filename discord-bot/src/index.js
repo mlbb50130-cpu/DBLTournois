@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events } = require('discord.js');
+const { Client, GatewayIntentBits, Events, MessageFlags } = require('discord.js');
 const config = require('./config');
 const api = require('./api');
 const { isAdmin } = require('./utils/admin');
@@ -16,12 +16,20 @@ client.once(Events.ClientReady, (c) => {
   console.log(`✅ ${config.BOT_NAME} connecté en tant que ${c.user.tag}`);
 });
 
-// --- Boutons (Valider / Contester / Actualiser) ---
+// --- Boutons (S'inscrire / Se désister / Valider / Contester / Actualiser) ---
 async function handleButton(interaction) {
   const id = interaction.customId;
   try {
-    if (id === 'valider' || id === 'contester') {
-      await interaction.deferReply({ ephemeral: true });
+    if (id === 'join') {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      const r = await api.joinTournament(interaction.user.id, interaction.user.username);
+      await interaction.editReply(r.message || '✅ Inscrit.');
+    } else if (id === 'desister') {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      const r = await api.withdraw(interaction.user.id);
+      await interaction.editReply(r.message || '✅ Désinscrit.');
+    } else if (id === 'valider' || id === 'contester') {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const r = id === 'valider'
         ? await api.validateScore(interaction.user.id)
         : await api.contestScore(interaction.user.id);
@@ -37,8 +45,8 @@ async function handleButton(interaction) {
     const msg = error && error.name === 'ApiError' ? `⚠️ ${error.message}` : '❌ Une erreur est survenue.';
     if (error && error.name !== 'ApiError') console.error(`Erreur bouton ${id}:`, error);
     try {
-      if (interaction.deferred || interaction.replied) await interaction.followUp({ content: msg, ephemeral: true });
-      else await interaction.reply({ content: msg, ephemeral: true });
+      if (interaction.deferred || interaction.replied) await interaction.followUp({ content: msg, flags: MessageFlags.Ephemeral });
+      else await interaction.reply({ content: msg, flags: MessageFlags.Ephemeral });
     } catch {
       /* interaction expirée */
     }
@@ -56,7 +64,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!command) return;
 
   if (command.adminOnly && !isAdmin(interaction)) {
-    await interaction.reply({ content: '⛔ Commande réservée aux administrateurs.', ephemeral: true });
+    await interaction.reply({ content: '⛔ Commande réservée aux administrateurs.', flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -69,7 +77,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   };
 
   try {
-    await interaction.deferReply();
+    await interaction.deferReply(command.ephemeral ? { flags: MessageFlags.Ephemeral } : undefined);
     await command.execute(interaction, ctx);
   } catch (error) {
     const msg = error && error.name === 'ApiError' ? `⚠️ ${error.message}` : '❌ Une erreur est survenue.';

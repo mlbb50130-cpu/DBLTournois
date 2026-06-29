@@ -47,6 +47,14 @@ function refreshRow(customId) {
   );
 }
 
+// Boutons d'inscription (le clic inscrit avec le pseudo Discord du joueur).
+function inscriptionButtons() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('join').setLabel("S'inscrire").setStyle(ButtonStyle.Success).setEmoji('✅'),
+    new ButtonBuilder().setCustomId('desister').setLabel('Se désister').setStyle(ButtonStyle.Secondary),
+  );
+}
+
 // Payload du classement (texte ou images) + bouton Actualiser. Réutilisé par la
 // slash command ET par le bouton de rafraîchissement.
 async function standingsPayload(api) {
@@ -109,6 +117,7 @@ const commands = [
     },
   },
   {
+    ephemeral: true,
     data: new SlashCommandBuilder()
       .setName('lier')
       .setDescription('Lier ce compte Discord à ton compte WhatsApp')
@@ -246,6 +255,17 @@ const commands = [
     },
   },
 
+  {
+    data: new SlashCommandBuilder().setName('panneau').setDescription("Afficher le panneau d'inscription (boutons)"),
+    async execute(interaction, ctx) {
+      const info = await ctx.api.getInfo();
+      await interaction.editReply({
+        content: `${info.message}\n\n📋 Cliquez sur **S'inscrire** pour rejoindre le tournoi !`,
+        components: [inscriptionButtons()],
+      });
+    },
+  },
+
   // --- Admin ---
   {
     adminOnly: true,
@@ -271,7 +291,10 @@ const commands = [
       const bestOf = interaction.options.getInteger('bo');
       const name = interaction.options.getString('nom');
       const res = await ctx.api.createTournament({ name, format, bestOf });
-      await interaction.editReply(`${res.message}\n\nLes joueurs s'inscrivent avec \`/join\`, puis \`/demarrer\`.`);
+      await interaction.editReply({
+        content: `${res.message}\n\n📋 Cliquez sur **S'inscrire** pour rejoindre le tournoi !`,
+        components: [inscriptionButtons()],
+      });
     },
   },
   {
