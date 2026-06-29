@@ -3,10 +3,11 @@
 
 const PORT = process.env.PORT || 3000;
 
-// Les bots appellent l'API dans le même conteneur (sauf si on force une URL).
-if (!process.env.API_BASE_URL) {
-  process.env.API_BASE_URL = `http://127.0.0.1:${PORT}`;
-}
+// En mono-service, l'API tourne dans le MÊME conteneur : les bots l'appellent
+// toujours en local. On force cette valeur (on ignore toute variable
+// API_BASE_URL éventuellement définie sur Railway, qui causerait un « API
+// injoignable »).
+process.env.API_BASE_URL = `http://127.0.0.1:${PORT}`;
 
 // Un échec isolé (login bot, etc.) ne doit pas tuer tout le processus.
 process.on('unhandledRejection', (e) => {
